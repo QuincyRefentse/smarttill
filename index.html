@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Smart Till Assist™ — Tech Unicorns</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root{
+    --paper:#F3EFE6;
+    --paper-raised:#FAF7F0;
+    --ink:#201E1A;
+    --ink-soft:#5B564C;
+    --line:#D8D1BF;
+    --steel:#4A5A66;
+    --steel-deep:#33404A;
+
+    --red:#C8402F;
+    --red-soft:#F4DDD8;
+    --blue:#2F6FC4;
+    --blue-soft:#D9E6F7;
+    --orange:#C87423;
+    --orange-soft:#F3E1CB;
+    --green:#3E8A5C;
+    --green-soft:#DBEDE0;
+
+    --dash-bg:#181B1E;
+    --dash-panel:#20242A;
+    --dash-panel-raised:#272C32;
+    --dash-line:#363D45;
+    --dash-text:#EAE7DE;
+    --dash-text-dim:#9AA0A6;
+
+    --font-display:'Archivo',sans-serif;
+    --font-body:'Inter',sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+
+    --radius:3px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1C1A17;
+      --paper-raised:#232019;
+      --ink:#EDE9DF;
+      --ink-soft:#B4AC9C;
+      --line:#3A352A;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1C1A17;
+    --paper-raised:#232019;
+    --ink:#EDE9DF;
+    --ink-soft:#B4AC9C;
+    --line:#3A352A;
+  }
+
+  *{box-sizing:border-box;}
+  html{
+    scroll-behavior:smooth;
+    scroll-padding-top:calc(64px + env(safe-area-inset-top, 0px));
+  }
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    padding-top:env(safe-area-inset-top, 0px);
+    padding-bottom:env(safe-area-inset-bottom, 0px);
+    -webkit-text-size-adjust:100%;
+  }
+  a, button{ -webkit-tap-highlight-color: transparent; }
+  img,svg{max-width:100%;}
+  a{color:inherit;}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 28px;}
+  section{padding:96px 0;}
+  @media(max-width:720px){ section{padding:64px 0;} .wrap{padding:0 20px;} }
+
+  h1,h2,h3,h4{font-family:var(--font-display);margin:0;line-height:1.05;letter-spacing:-0.01em;}
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    color:var(--ink-soft);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--ink-soft);display:inline-block;}
+  .section-head{max-width:640px;margin-bottom:52px;}
+  .section-head h2{font-size:clamp(28px,4vw,40px);font-weight:900;}
+  .section-head p{color:var(--ink-soft);font-size:17px;margin-top:14px;max-width:56ch;}
+
+  /* ---------- NAV ---------- */
+  header.nav{
+    position:sticky;top:env(safe-area-inset-top, 0px);z-index:60;
+    background:color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{max-width:1180px;margin:0 auto;padding:0 28px;height:64px;display:flex;align-items:center;justify-content:space-between;}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:900;font-size:17px;letter-spacing:-0.01em;}
+  .brand .dot{width:9px;height:9px;background:var(--red);border-radius:1px;flex:none;}
+  nav.links{display:flex;gap:28px;font-size:14.5px;font-weight:500;}
+  nav.links a{text-decoration:none;color:var(--ink-soft);border-bottom:2px solid transparent;padding-bottom:4px;transition:color .15s;}
+  nav.links a.active,nav.links a:hover{color:var(--ink);border-color:var(--red);}
+  .burger{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:8px;}
+  .burger span{width:22px;height:2px;background:var(--ink);display:block;}
+  .mobile-panel{display:none;flex-direction:column;padding:8px 28px 20px;gap:2px;border-bottom:1px solid var(--line);background:var(--paper);}
+  .mobile-panel a{padding:12px 0;text-decoration:none;color:var(--ink);font-size:15px;border-bottom:1px solid var(--line);}
+  .mobile-panel a:last-child{border-bottom:none;}
+  @media(max-width:860px){
+    nav.links{display:none;}
+    .burger{display:flex;}
+    .mobile-panel.open{display:flex;}
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{padding:76px 0 40px;}
+  .hero-grid{display:grid;grid-template-columns:1.05fr 0.95fr;gap:56px;align-items:center;}
+  @media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:40px;}}
+  .hero h1{font-size:clamp(36px,5.4vw,58px);font-weight:900;}
+  .hero .lede{margin-top:22px;font-size:18px;color:var(--ink-soft);max-width:52ch;}
+  .hero-actions{display:flex;gap:14px;margin-top:32px;flex-wrap:wrap;}
+  .btn{
+    font-family:var(--font-body);font-weight:600;font-size:14.5px;
+    padding:13px 22px;border-radius:var(--radius);cursor:pointer;
+    border:1px solid var(--ink);background:var(--ink);color:var(--paper);
+    text-decoration:none;display:inline-flex;align-items:center;gap:8px;
+    transition:transform .12s ease;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn.ghost{background:transparent;color:var(--ink);border-color:var(--line);}
+  .btn.ghost:hover{border-color:var(--ink);}
+
+  /* the receipt-alert hero display */
+  .till-readout{
+    background:var(--dash-bg);
+    border:1px solid var(--dash-line);
+    border-radius:6px;
+    padding:26px 26px 22px;
+    box-shadow:0 30px 60px -25px rgba(0,0,0,0.45);
+  }
+  .till-readout .row1{display:flex;justify-content:space-between;align-items:center;font-family:var(--font-mono);color:var(--dash-text-dim);font-size:12px;margin-bottom:16px;}
+  .readout-alert{
+    font-family:var(--font-mono);
+    font-size:clamp(19px,2.6vw,25px);
+    font-weight:600;
+    color:#fff;
+    display:flex;align-items:center;gap:12px;
+    padding:14px 0;
+  }
+  .readout-alert .pulse{width:12px;height:12px;border-radius:50%;background:var(--red);flex:none;animation:pulse 1.4s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(200,64,47,.55);}70%{opacity:.75;box-shadow:0 0 0 9px rgba(200,64,47,0);}}
+  .readout-meta{display:flex;gap:22px;margin-top:14px;font-family:var(--font-mono);font-size:13px;color:var(--dash-text-dim);border-top:1px dashed var(--dash-line);padding-top:14px;}
+  .readout-meta b{color:var(--dash-text);font-weight:600;}
+
+  /* ---------- WORKFLOW STEPS ---------- */
+  .steps{counter-reset:step;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);}
+  @media(max-width:820px){.steps{grid-template-columns:1fr;}}
+  .step{background:var(--paper-raised);padding:30px 26px;}
+  .step .num{font-family:var(--font-mono);font-size:13px;color:var(--red);margin-bottom:14px;}
+  .step h4{font-size:18px;font-weight:800;margin-bottom:8px;}
+  .step p{font-size:14.5px;color:var(--ink-soft);margin:0;}
+
+  /* problem grid */
+  .problem-layout{display:grid;grid-template-columns:0.9fr 1.1fr;gap:60px;}
+  @media(max-width:900px){.problem-layout{grid-template-columns:1fr;gap:32px;}}
+  .chip-list{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{
+    font-family:var(--font-mono);font-size:12.5px;
+    border:1px solid var(--line);padding:7px 11px;border-radius:20px;color:var(--ink-soft);
+  }
+  .friction-list{list-style:none;margin:0;padding:0;}
+  .friction-list li{
+    display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--line);font-size:15px;
+  }
+  .friction-list li:first-child{padding-top:0;}
+  .friction-list .x{font-family:var(--font-mono);color:var(--red);flex:none;}
+
+  /* ---------- CATEGORY CARDS ---------- */
+  .cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  @media(max-width:900px){.cat-grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:520px){.cat-grid{grid-template-columns:1fr;}}
+  .cat-card{border:1px solid var(--line);background:var(--paper-raised);padding:22px 20px;border-radius:4px;}
+  .cat-card .tag{
+    display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:12px;
+    padding:5px 10px;border-radius:20px;margin-bottom:14px;font-weight:600;
+  }
+  .cat-card .tag .sw{width:8px;height:8px;border-radius:50%;}
+  .cat-card ul{margin:0;padding-left:18px;font-size:13.5px;color:var(--ink-soft);}
+  .cat-card li{margin-bottom:4px;}
+  .tag.red{background:var(--red-soft);color:var(--red);} .tag.red .sw{background:var(--red);}
+  .tag.blue{background:var(--blue-soft);color:var(--blue);} .tag.blue .sw{background:var(--blue);}
+  .tag.orange{background:var(--orange-soft);color:var(--orange);} .tag.orange .sw{background:var(--orange);}
+  .tag.green{background:var(--green-soft);color:var(--green);} .tag.green .sw{background:var(--green);}
+
+  /* ---------- LIVE DEMO ---------- */
+  .demo-shell{
+    background:var(--dash-bg);
+    border-radius:8px;
+    border:1px solid var(--dash-line);
+    color:var(--dash-text);
+    overflow:hidden;
+  }
+  .demo-topbar{
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+    padding:16px 22px;border-bottom:1px solid var(--dash-line);
+    font-family:var(--font-mono);font-size:12.5px;color:var(--dash-text-dim);
+  }
+  @media(max-width:480px){ .demo-topbar span:first-child{font-size:11px;} }
+  .demo-topbar .live{display:flex;align-items:center;gap:8px;color:#7FD79A;}
+  .demo-topbar .live .dot{width:7px;height:7px;background:#4C9A6A;border-radius:50%;animation:pulse 1.6s infinite;}
+  .demo-body{display:grid;grid-template-columns:1.1fr 1.4fr;}
+  @media(max-width:940px){.demo-body{grid-template-columns:1fr;}}
+
+  .till-panel{padding:24px;border-right:1px solid var(--dash-line);}
+  @media(max-width:940px){.till-panel{border-right:none;border-bottom:1px solid var(--dash-line);}}
+  .till-panel h4{font-family:var(--font-mono);font-size:12.5px;color:var(--dash-text-dim);font-weight:500;text-transform:none;margin-bottom:16px;}
+  .till-select{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px;}
+  .till-btn{
+    font-family:var(--font-mono);font-size:13px;padding:13px 0;text-align:center;
+    background:var(--dash-panel);border:1px solid var(--dash-line);color:var(--dash-text-dim);
+    border-radius:4px;cursor:pointer;min-height:44px;
+  }
+  .till-btn.active{background:var(--dash-panel-raised);color:var(--dash-text);border-color:#5a636c;}
+  .assist-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .assist-btn{
+    border:none;border-radius:5px;padding:16px 12px;cursor:pointer;
+    font-family:var(--font-body);font-weight:600;font-size:13.5px;
+    display:flex;flex-direction:column;gap:6px;align-items:flex-start;
+    color:#fff;transition:filter .12s;
+  }
+  .assist-btn:hover{filter:brightness(1.12);}
+  .assist-btn:active{filter:brightness(0.92);}
+  .assist-btn small{font-family:var(--font-mono);font-weight:500;opacity:.85;font-size:11px;}
+  .assist-btn.red{background:var(--red);} .assist-btn.blue{background:var(--blue);}
+  .assist-btn.orange{background:var(--orange);} .assist-btn.green{background:var(--green);}
+  .demo-hint{margin-top:18px;font-size:12.5px;color:var(--dash-text-dim);line-height:1.6;}
+
+  .dash-panel{padding:24px;}
+  .dash-panel h4{font-family:var(--font-mono);font-size:12.5px;color:var(--dash-text-dim);font-weight:500;margin-bottom:14px;}
+  .req-table{width:100%;min-width:460px;border-collapse:collapse;font-size:13.5px;}
+  .req-table th{
+    text-align:left;font-family:var(--font-mono);font-size:11px;color:var(--dash-text-dim);
+    font-weight:500;padding:0 10px 10px;border-bottom:1px solid var(--dash-line);
+  }
+  .req-table td{padding:11px 10px;border-bottom:1px solid var(--dash-line);vertical-align:middle;}
+  .req-table tr:last-child td{border-bottom:none;}
+  .req-empty{padding:34px 10px;text-align:center;color:var(--dash-text-dim);font-size:13.5px;}
+  .badge{
+    font-family:var(--font-mono);font-size:11px;padding:3px 8px;border-radius:20px;display:inline-flex;align-items:center;gap:6px;
+  }
+  .badge .sw{width:6px;height:6px;border-radius:50%;}
+  .badge.red{background:rgba(200,64,47,.18);color:#F0958A;} .badge.red .sw{background:#F0958A;}
+  .badge.blue{background:rgba(47,111,196,.18);color:#8FB7EC;} .badge.blue .sw{background:#8FB7EC;}
+  .badge.orange{background:rgba(200,116,35,.18);color:#F0B876;} .badge.orange .sw{background:#F0B876;}
+  .badge.green{background:rgba(62,138,92,.18);color:#8FD3A6;} .badge.green .sw{background:#8FD3A6;}
+  .status-pill{font-family:var(--font-mono);font-size:11.5px;padding:3px 9px;border-radius:20px;}
+  .status-pill.waiting{background:rgba(200,64,47,.15);color:#F0958A;}
+  .status-pill.assigned{background:rgba(200,116,35,.18);color:#F0B876;}
+  .status-pill.resolved{background:rgba(62,138,92,.18);color:#8FD3A6;}
+  .row-actions{display:flex;gap:6px;}
+  .mini-btn{
+    font-family:var(--font-mono);font-size:11.5px;padding:10px 12px;border-radius:4px;cursor:pointer;
+    border:1px solid var(--dash-line);background:var(--dash-panel-raised);color:var(--dash-text);
+    min-height:40px;
+  }
+  .mini-btn:hover{border-color:#5a636c;}
+  .timer{font-family:var(--font-mono);}
+
+  .stat-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--dash-line);margin-top:20px;border:1px solid var(--dash-line);border-radius:4px;overflow:hidden;}
+  .stat-cell{background:var(--dash-panel);padding:14px 16px;}
+  .stat-cell .v{font-family:var(--font-mono);font-size:22px;font-weight:600;}
+  .stat-cell .l{font-size:11.5px;color:var(--dash-text-dim);margin-top:4px;}
+
+  /* ---------- ANALYTICS ---------- */
+  .analytics-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:20px;}
+  @media(max-width:900px){.analytics-grid{grid-template-columns:1fr;}}
+  .chart-card{background:var(--paper-raised);border:1px solid var(--line);border-radius:4px;padding:22px;}
+  .chart-card h4{font-size:14px;font-weight:700;margin-bottom:4px;}
+  .chart-card .sub{font-size:12.5px;color:var(--ink-soft);margin-bottom:16px;font-family:var(--font-mono);}
+  .chart-wrap{position:relative;height:230px;}
+
+  /* ---------- MARKET ---------- */
+  .market-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);}
+  @media(max-width:820px){.market-grid{grid-template-columns:repeat(2,1fr);}}
+  .market-cell{background:var(--paper-raised);padding:22px;}
+  .market-cell .k{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-soft);margin-bottom:10px;}
+  .market-cell ul{margin:0;padding-left:16px;font-size:14px;}
+  .market-cell li{margin-bottom:4px;}
+
+  /* ---------- PRICING ---------- */
+  .price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  @media(max-width:860px){.price-grid{grid-template-columns:1fr;}}
+  .price-card{border:1px solid var(--line);background:var(--paper-raised);padding:26px 24px;border-radius:4px;display:flex;flex-direction:column;}
+  .price-card h4{font-size:18px;font-weight:800;margin-bottom:6px;}
+  .price-card .desc{font-size:13.5px;color:var(--ink-soft);margin-bottom:18px;min-height:40px;}
+  .price-card ul{list-style:none;margin:0 0 0;padding:0;flex:1;}
+  .price-card li{
+    font-size:13.5px;padding:9px 0;border-top:1px solid var(--line);color:var(--ink-soft);
+  }
+  .price-card.rec{border-color:var(--ink);position:relative;}
+  .price-card.rec .flag{
+    position:absolute;top:-11px;left:24px;background:var(--ink);color:var(--paper);
+    font-family:var(--font-mono);font-size:11px;padding:4px 9px;border-radius:20px;
+  }
+
+  /* ---------- PILOT ---------- */
+  .pilot-timeline{display:flex;flex-direction:column;border-left:2px solid var(--line);margin-left:8px;}
+  .pilot-phase{padding:0 0 34px 30px;position:relative;}
+  .pilot-phase:last-child{padding-bottom:0;}
+  .pilot-phase::before{
+    content:"";position:absolute;left:-7px;top:2px;width:12px;height:12px;border-radius:50%;
+    background:var(--paper);border:2px solid var(--red);
+  }
+  .pilot-phase .ph{font-family:var(--font-mono);font-size:12px;color:var(--red);margin-bottom:6px;}
+  .pilot-phase h4{font-size:17px;font-weight:800;margin-bottom:6px;}
+  .pilot-phase p{font-size:14.5px;color:var(--ink-soft);margin:0;max-width:56ch;}
+  .kpi-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px;}
+  @media(max-width:760px){.kpi-strip{grid-template-columns:1fr 1fr;}}
+  @media(max-width:480px){.kpi-strip{grid-template-columns:1fr;}}
+  .kpi-cell{border:1px solid var(--line);padding:16px 18px;border-radius:4px;background:var(--paper-raised);}
+  .kpi-cell .l{font-size:12.5px;color:var(--ink-soft);font-family:var(--font-mono);}
+  .kpi-cell .v{font-family:var(--font-display);font-weight:800;font-size:20px;margin-top:6px;}
+
+  /* ---------- POSITIONING / IP ---------- */
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:48px;}
+  @media(max-width:860px){.two-col{grid-template-columns:1fr;gap:32px;}}
+  .note-card{border-left:3px solid var(--steel);padding:4px 0 4px 20px;}
+  .note-card h4{font-size:15px;font-weight:800;margin-bottom:8px;}
+  .note-card p{font-size:14.5px;color:var(--ink-soft);margin:0;}
+
+  /* ---------- CONTACT / FOOTER ---------- */
+  .contact-band{background:var(--ink);color:var(--paper);}
+  .contact-band .wrap{padding:80px 28px;}
+  .contact-band h2{color:var(--paper);font-size:clamp(26px,4vw,38px);}
+  .contact-band p{color:#C7C2B6;margin-top:14px;max-width:50ch;}
+  .contact-grid{display:flex;flex-wrap:wrap;gap:40px;margin-top:36px;}
+  .contact-item .l{font-family:var(--font-mono);font-size:11.5px;color:#918C7F;margin-bottom:6px;}
+  .contact-item .v{font-size:16px;font-weight:600;}
+  .contact-item a{text-decoration:none;color:var(--paper);border-bottom:1px solid #55503f;}
+
+  footer{padding:26px 0;border-top:1px solid var(--line);}
+  .foot-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-size:12.5px;color:var(--ink-soft);font-family:var(--font-mono);}
+
+  .disclaimer{
+    margin-top:56px;border:1px dashed var(--line);border-radius:4px;padding:20px 22px;
+    font-size:13px;color:var(--ink-soft);background:var(--paper-raised);
+  }
+  .disclaimer b{color:var(--ink);}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="brand"><span class="dot"></span>Smart Till Assist™</div>
+    <nav class="links">
+      <a href="#problem">Problem</a>
+      <a href="#solution">Solution</a>
+      <a href="#demo">Live demo</a>
+      <a href="#analytics">Analytics</a>
+      <a href="#market">Market</a>
+      <a href="#pilot">Pilot</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <button class="burger" id="burgerBtn" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+  <div class="mobile-panel" id="mobilePanel">
+    <a href="#problem">Problem</a>
+    <a href="#solution">Solution</a>
+    <a href="#demo">Live demo</a>
+    <a href="#analytics">Analytics</a>
+    <a href="#market">Market</a>
+    <a href="#pilot">Pilot</a>
+    <a href="#contact">Contact</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow">TECH UNICORNS · CHECKOUT OPERATIONS PLATFORM</div>
+      <h1>When a cashier needs help, the right person should know immediately.</h1>
+      <p class="lede">Smart Till Assist™ turns "look for a supervisor" into a structured, visible, trackable event — a dedicated button at every till, a live alert to the right person, and a full record of how fast the store responded.</p>
+      <div class="hero-actions">
+        <a href="#demo" class="btn">Try the live simulation</a>
+        <a href="#solution" class="btn ghost">How it works</a>
+      </div>
+    </div>
+    <div class="till-readout" id="heroReadout">
+      <div class="row1"><span>SUPERVISOR RECEIVER · FRONT-END</span><span id="heroClock">14:21:04</span></div>
+      <div class="readout-alert"><span class="pulse"></span><span id="heroAlertText">SUPERVISOR REQUIRED — TILL 08</span></div>
+      <div class="readout-meta">
+        <span>WAITING <b id="heroWaiting">00:32</b></span>
+        <span>CATEGORY <b>Refund approval</b></span>
+        <span>STATUS <b>Unacknowledged</b></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="problem">
+  <div class="wrap problem-layout">
+    <div>
+      <div class="eyebrow">THE PROBLEM</div>
+      <h2>Supervisors aren't missing. They're just hard to find fast.</h2>
+      <p style="color:var(--ink-soft);font-size:15.5px;margin-top:16px;">Checkout is time-sensitive, and cashiers regularly hit situations they can't resolve alone:</p>
+      <div class="chip-list" style="margin-top:16px;">
+        <span class="chip">Approvals</span><span class="chip">Refunds</span><span class="chip">Reversals</span>
+        <span class="chip">Price overrides</span><span class="chip">Disputes</span><span class="chip">Payment issues</span>
+        <span class="chip">Till faults</span><span class="chip">Age-restricted sales</span><span class="chip">Security</span>
+      </div>
+    </div>
+    <ul class="friction-list">
+      <li><span class="x">01</span>Cashier has to leave the till to go find a supervisor.</li>
+      <li><span class="x">02</span>Calling out verbally slows the whole aisle down, not just one till.</li>
+      <li><span class="x">03</span>Supervisors have no visibility of where they're needed most.</li>
+      <li><span class="x">04</span>Nobody can say how long a request actually took to resolve.</li>
+      <li><span class="x">05</span>Recurring problems — a faulty scanner, a slow till — go unnoticed.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="solution" style="background:var(--paper-raised);border-top:1px solid var(--line);border-bottom:1px solid var(--line);">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">THE SOLUTION</div>
+      <h2>Cashier → button → alert → supervisor → resolved.</h2>
+      <p>One press replaces looking, shouting, or waiting to be noticed with a structured request the whole front end can see.</p>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="num">01</div><h4>Cashier presses the button</h4><p>A button at the till, categorised by what's needed — supervisor, technical, security, or general help.</p></div>
+      <div class="step"><div class="num">02</div><h4>Till, category and time are captured</h4><p>The system identifies exactly which till is calling and why, the moment the button is pressed.</p></div>
+      <div class="step"><div class="num">03</div><h4>Supervisor is alerted</h4><p>A wearable, control panel, tablet or dashboard shows the till number, category and waiting time.</p></div>
+      <div class="step"><div class="num">04</div><h4>Supervisor responds</h4><p>They go straight to the till that needs them — no searching, no relayed messages.</p></div>
+      <div class="step"><div class="num">05</div><h4>Request is acknowledged and closed</h4><p>Every step is timestamped: requested, acknowledged, resolved.</p></div>
+      <div class="step"><div class="num">06</div><h4>Store operations data accumulates</h4><p>Response times, request volumes and recurring problem tills become visible over time.</p></div>
+    </div>
+
+    <div class="section-head" style="margin-top:72px;margin-bottom:32px;">
+      <div class="eyebrow">ASSISTANCE CATEGORIES</div>
+      <h2 style="font-size:26px;">Not just one generic "help" button.</h2>
+    </div>
+    <div class="cat-grid">
+      <div class="cat-card">
+        <span class="tag red"><span class="sw"></span>Supervisor</span>
+        <ul><li>Refund approval</li><li>Transaction override</li><li>Price override</li><li>Manager authorisation</li></ul>
+      </div>
+      <div class="cat-card">
+        <span class="tag blue"><span class="sw"></span>Technical</span>
+        <ul><li>POS malfunction</li><li>Scanner problem</li><li>Printer failure</li><li>Payment terminal issue</li></ul>
+      </div>
+      <div class="cat-card">
+        <span class="tag orange"><span class="sw"></span>Security</span>
+        <ul><li>Suspicious activity</li><li>Potential theft</li><li>Customer confrontation</li></ul>
+      </div>
+      <div class="cat-card">
+        <span class="tag green"><span class="sw"></span>General</span>
+        <ul><li>Customer support</li><li>Product query</li><li>General assistance</li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="demo">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">LIVE SIMULATION</div>
+      <h2>Press a till button. Watch the supervisor dashboard respond.</h2>
+      <p>This is a working simulation of the full loop — pick a till, raise a request, then acknowledge and resolve it from the dashboard, just as a supervisor would.</p>
+    </div>
+
+    <div class="demo-shell">
+      <div class="demo-topbar">
+        <span>SMART TILL ASSIST™ · CONTROL DASHBOARD · PILOT STORE 01</span>
+        <span class="live"><span class="dot"></span>LIVE SIMULATION</span>
+      </div>
+      <div class="demo-body">
+        <div class="till-panel">
+          <h4>1 · SELECT A TILL</h4>
+          <div class="till-select" id="tillSelect"></div>
+          <h4>2 · RAISE A REQUEST</h4>
+          <div class="assist-btns">
+            <button class="assist-btn red" data-cat="red" data-label="Supervisor">Supervisor<small>Refund / override</small></button>
+            <button class="assist-btn blue" data-cat="blue" data-label="Technical">Technical<small>POS / hardware</small></button>
+            <button class="assist-btn orange" data-cat="orange" data-label="Security">Security<small>Theft / dispute</small></button>
+            <button class="assist-btn green" data-cat="green" data-label="General">General<small>Customer support</small></button>
+          </div>
+          <p class="demo-hint">Requests appear on the dashboard instantly with a live waiting timer. Acknowledge, then resolve, to see response and resolution times recorded — and the analytics below update as you go.</p>
+        </div>
+        <div class="dash-panel">
+          <h4>ACTIVE &amp; RECENT REQUESTS</h4>
+          <div style="overflow-x:auto;">
+          <table class="req-table">
+            <thead><tr><th>Till</th><th>Category</th><th>Waiting</th><th>Status</th><th></th></tr></thead>
+            <tbody id="reqTableBody"></tbody>
+          </table>
+          </div>
+          <div id="reqEmpty" class="req-empty">No active requests. Raise one from a till on the left.</div>
+          <div class="stat-strip">
+            <div class="stat-cell"><div class="v" id="statCount">0</div><div class="l">REQUESTS TODAY</div></div>
+            <div class="stat-cell"><div class="v" id="statAvgResponse">—</div><div class="l">AVG RESPONSE TIME</div></div>
+            <div class="stat-cell"><div class="v" id="statAvgResolve">—</div><div class="l">AVG RESOLUTION TIME</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="analytics" style="background:var(--paper-raised);border-top:1px solid var(--line);border-bottom:1px solid var(--line);">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">STORE OPERATIONS ANALYTICS</div>
+      <h2>The button is the input. The data is the product.</h2>
+      <p>Every resolved request from the simulation above feeds these charts — this is the same shape of reporting a live deployment would produce across a store, or a whole chain.</p>
+    </div>
+    <div class="analytics-grid">
+      <div class="chart-card">
+        <h4>Requests by category</h4>
+        <div class="sub">Live from this session's simulation</div>
+        <div class="chart-wrap"><canvas id="catChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h4>Response time by request</h4>
+        <div class="sub">Seconds from request to acknowledgement</div>
+        <div class="chart-wrap"><canvas id="respChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="market">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">TARGET MARKET</div>
+      <h2>Anywhere staff operate multiple service points.</h2>
+      <p>Grocery and general retail first, with a clear path into pharmacy, clothing, hardware and beyond.</p>
+    </div>
+    <div class="market-grid">
+      <div class="market-cell"><div class="k">GROCERY &amp; SUPERMARKET</div><ul><li>Shoprite / Checkers</li><li>Pick n Pay / Boxer</li><li>SPAR</li><li>Woolworths Food</li><li>Makro</li></ul></div>
+      <div class="market-cell"><div class="k">PHARMACY</div><ul><li>Clicks</li><li>Dis-Chem</li></ul></div>
+      <div class="market-cell"><div class="k">CLOTHING</div><ul><li>PEP / Ackermans</li><li>Mr Price</li><li>TFG brands</li><li>Truworths</li></ul></div>
+      <div class="market-cell"><div class="k">HARDWARE</div><ul><li>Builders</li><li>Cashbuild</li><li>Leroy Merlin</li></ul></div>
+    </div>
+    <div class="disclaimer" style="margin-top:28px;">
+      <b>Why Shoprite as a pilot partner:</b> the Group has publicly invested in digital transformation and computer-vision queue monitoring. Smart Till Assist™ is positioned to complement that — queue monitoring identifies the problem, Smart Till Assist™ helps staff respond to it — not to replace existing store technology.
+    </div>
+  </div>
+</section>
+
+<section style="background:var(--paper-raised);border-top:1px solid var(--line);border-bottom:1px solid var(--line);">
+  <div class="wrap two-col">
+    <div>
+      <div class="eyebrow">COMPETITIVE POSITION</div>
+      <h2 style="font-size:26px;">Till buttons already exist. The platform is the differentiator.</h2>
+      <p style="color:var(--ink-soft);font-size:15px;margin-top:14px;">South African providers already sell wireless till buttons and supervisor-call hardware. The opportunity for Tech Unicorns isn't the button — it's combining categorised alerts, response-time measurement, a central dashboard, store analytics and a path to POS integration into one platform.</p>
+    </div>
+    <div class="note-card">
+      <h4>Intellectual property focus</h4>
+      <p>The IP claim sits in the specific system architecture, workflows, software and implementation methodology — not in the generic concept of pressing a button to call a supervisor. Any retailer-specific integration would sit under its own commercial and IP agreement.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">BUSINESS MODEL</div>
+      <h2>Three ways to commercialise the platform.</h2>
+    </div>
+    <div class="price-grid">
+      <div class="price-card">
+        <h4>Hardware + software</h4>
+        <div class="desc">Retailer buys the hardware outright, pays an ongoing platform fee.</div>
+        <ul><li>Buttons, receivers, gateways, displays</li><li>Recurring software / platform fee</li><li>Retailer owns the hardware</li></ul>
+      </div>
+      <div class="price-card rec">
+        <span class="flag">RECOMMENDED</span>
+        <h4>Managed service</h4>
+        <div class="desc">Tech Unicorns provides and maintains everything for one recurring fee.</div>
+        <ul><li>Hardware, software, installation</li><li>Monitoring, maintenance, support</li><li>Analytics included</li><li>Recurring revenue, Tech Unicorns retains the platform</li></ul>
+      </div>
+      <div class="price-card">
+        <h4>SaaS</h4>
+        <div class="desc">Recurring fee per till, store or location.</div>
+        <ul><li>Retailer supplies compatible hardware</li><li>Platform billed per till / store</li><li>Lower upfront cost for the retailer</li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pilot" style="background:var(--paper-raised);border-top:1px solid var(--line);border-bottom:1px solid var(--line);">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">PROPOSED PILOT</div>
+      <h2>Start with one store. Prove it. Then scale.</h2>
+    </div>
+    <div class="pilot-timeline">
+      <div class="pilot-phase"><div class="ph">PHASE 1</div><h4>Pilot store</h4><p>One high-volume store, roughly 10–20 tills fitted, depending on the retailer's requirements.</p></div>
+      <div class="pilot-phase"><div class="ph">PHASE 2</div><h4>8–12 week pilot</h4><p>Long enough to see real patterns across peak and off-peak trading periods.</p></div>
+      <div class="pilot-phase"><div class="ph">PHASE 3</div><h4>Measure</h4><p>Request volume, response and resolution time, category mix, peak periods, and cashier and management feedback.</p></div>
+      <div class="pilot-phase"><div class="ph">PHASE 4</div><h4>Evaluate</h4><p>Compare operational performance before and after deployment against agreed KPIs.</p></div>
+      <div class="pilot-phase"><div class="ph">PHASE 5</div><h4>Expand</h4><p>5 stores → 20 stores → 100 stores → national rollout, if the pilot proves out.</p></div>
+    </div>
+    <div class="kpi-strip">
+      <div class="kpi-cell"><div class="l">RESPONSE TIME</div><div class="v">Target reduction, agreed pre-pilot</div></div>
+      <div class="kpi-cell"><div class="l">ADOPTION</div><div class="v">% of requests submitted via platform</div></div>
+      <div class="kpi-cell"><div class="l">RELIABILITY</div><div class="v">Uptime &amp; alert delivery rate</div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head" style="margin-bottom:0;">
+      <div class="eyebrow">DATA &amp; SECURITY</div>
+      <h2 style="font-size:26px;">Operational data first. No customer data required to start.</h2>
+      <p>The initial system needs no customer personal information at all — just Store → Till → Alert type → Time → Response → Resolution. A production deployment would still be built around POPIA requirements: role-based access, authentication, encryption, audit logs and defined data retention.</p>
+    </div>
+    <div class="disclaimer">
+      <b>Honest framing:</b> everything above the fold on this page — the live demo included — is a working <b>concept prototype</b> built to pitch the idea. It runs entirely in this browser session and resets on reload. A production deployment would additionally require: real till hardware and a wireless gateway, a signed retailer agreement covering data and IP, POPIA sign-off from the retailer's compliance team, integration with the retailer's actual POS and store-management systems, and a hardened backend with authentication, audit logging and multi-store device management — none of which exists yet.
+    </div>
+  </div>
+</section>
+
+<div class="contact-band" id="contact">
+  <div class="wrap">
+    <div class="eyebrow" style="color:#918C7F;">NEXT STEPS</div>
+    <h2>Let's put Smart Till Assist™ in front of your front-end team.</h2>
+    <p>Tech Unicorns is seeking an initial retail partner for a controlled pilot — starting with a meeting between operations, IT and store technology stakeholders.</p>
+    <div class="contact-grid">
+      <div class="contact-item"><div class="l">FOUNDER &amp; INNOVATOR</div><div class="v">Tshepang Masilo</div></div>
+      <div class="contact-item"><div class="l">EMAIL</div><div class="v"><a href="mailto:Tshepang.TechUnicorns@outlook.com">Tshepang.TechUnicorns@outlook.com</a></div></div>
+      <div class="contact-item"><div class="l">PHONE</div><div class="v"><a href="tel:+27815755772">+27 81 575 5772</a></div></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap foot-inner">
+    <span>A Tech Unicorns Solution · Created by Tshepang Masilo.</span>
+    <span>Smart Till Assist™ — Press. Alert. Respond. Resolve.</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // ---------- NAV ----------
+  var burger = document.getElementById('burgerBtn');
+  var panel = document.getElementById('mobilePanel');
+  burger.addEventListener('click', function(){ panel.classList.toggle('open'); });
+  panel.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', function(){ panel.classList.remove('open'); }); });
+
+  var navLinks = document.querySelectorAll('nav.links a');
+  var sections = Array.from(navLinks).map(function(a){ return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+  if('IntersectionObserver' in window){
+    var obs = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          var id = '#' + entry.target.id;
+          navLinks.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === id); });
+        }
+      });
+    }, { rootMargin: '-40% 0px -50% 0px' });
+    sections.forEach(function(s){ obs.observe(s); });
+  }
+
+  // ---------- HERO READOUT ----------
+  var heroWaitSec = 32;
+  setInterval(function(){
+    heroWaitSec++;
+    var m = String(Math.floor(heroWaitSec/60)).padStart(2,'0');
+    var s = String(heroWaitSec%60).padStart(2,'0');
+    document.getElementById('heroWaiting').textContent = m + ':' + s;
+    var now = new Date();
+    document.getElementById('heroClock').textContent =
+      String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
+  }, 1000);
+
+  // ---------- LIVE DEMO STATE ----------
+  var TILLS = ['01','02','03','04','05','06','07','08'];
+  var CATS = {
+    red:    { label:'Supervisor', color:'#C8402F' },
+    blue:   { label:'Technical',  color:'#2F6FC4' },
+    orange: { label:'Security',   color:'#C87423' },
+    green:  { label:'General',    color:'#3E8A5C' }
+  };
+  var selectedTill = '03';
+  var requests = [];      // active + recent, {id,till,cat,waitSec,status,ackAt,resolveAt}
+  var resolvedLog = [];   // fully resolved, for charts: {cat, responseSec}
+  var reqIdSeq = 1;
+
+  var tillSelectEl = document.getElementById('tillSelect');
+  function renderTillSelect(){
+    tillSelectEl.innerHTML = '';
+    TILLS.forEach(function(t){
+      var b = document.createElement('button');
+      b.className = 'till-btn' + (t === selectedTill ? ' active' : '');
+      b.textContent = 'TILL ' + t;
+      b.addEventListener('click', function(){ selectedTill = t; renderTillSelect(); });
+      tillSelectEl.appendChild(b);
+    });
+  }
+  renderTillSelect();
+
+  document.querySelectorAll('.assist-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      requests.unshift({
+        id: reqIdSeq++,
+        till: selectedTill,
+        cat: btn.getAttribute('data-cat'),
+        catLabel: btn.getAttribute('data-label'),
+        waitSec: 0,
+        status: 'waiting',
+        ackSec: null
+      });
+      renderTable();
+    });
+  });
+
+  function fmt(sec){
+    var m = String(Math.floor(sec/60)).padStart(2,'0');
+    var s = String(sec%60).padStart(2,'0');
+    return m + ':' + s;
+  }
+
+  var tbody = document.getElementById('reqTableBody');
+  var emptyEl = document.getElementById('reqEmpty');
+
+  function renderTable(){
+    tbody.innerHTML = '';
+    var visible = requests.slice(0, 8);
+    emptyEl.style.display = visible.length ? 'none' : 'block';
+    visible.forEach(function(r){
+      var tr = document.createElement('tr');
+
+      var tdTill = document.createElement('td');
+      tdTill.className = 'timer';
+      tdTill.textContent = 'TILL ' + r.till;
+      tr.appendChild(tdTill);
+
+      var tdCat = document.createElement('td');
+      var badge = document.createElement('span');
+      badge.className = 'badge ' + r.cat;
+      badge.innerHTML = '<span class="sw"></span>' + r.catLabel;
+      tdCat.appendChild(badge);
+      tr.appendChild(tdCat);
+
+      var tdWait = document.createElement('td');
+      tdWait.className = 'timer';
+      tdWait.textContent = fmt(r.waitSec);
+      tr.appendChild(tdWait);
+
+      var tdStatus = document.createElement('td');
+      var pill = document.createElement('span');
+      pill.className = 'status-pill ' + r.status;
+      pill.textContent = r.status === 'waiting' ? 'Waiting' : (r.status === 'assigned' ? 'Assigned' : 'Resolved');
+      tdStatus.appendChild(pill);
+      tr.appendChild(tdStatus);
+
+      var tdAction = document.createElement('td');
+      var actions = document.createElement('div');
+      actions.className = 'row-actions';
+      if(r.status === 'waiting'){
+        var ackBtn = document.createElement('button');
+        ackBtn.className = 'mini-btn';
+        ackBtn.textContent = 'Acknowledge';
+        ackBtn.addEventListener('click', function(){
+          r.status = 'assigned';
+          r.ackSec = r.waitSec;
+          renderTable();
+        });
+        actions.appendChild(ackBtn);
+      } else if(r.status === 'assigned'){
+        var resBtn = document.createElement('button');
+        resBtn.className = 'mini-btn';
+        resBtn.textContent = 'Resolve';
+        resBtn.addEventListener('click', function(){
+          r.status = 'resolved';
+          resolvedLog.push({ cat: r.cat, catLabel: r.catLabel, responseSec: r.ackSec, resolutionSec: r.waitSec });
+          updateStats();
+          updateCharts();
+          renderTable();
+        });
+        actions.appendChild(resBtn);
+      }
+      tdAction.appendChild(actions);
+      tr.appendChild(tdAction);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  function updateStats(){
+    document.getElementById('statCount').textContent = resolvedLog.length + requests.filter(function(r){return r.status!=='resolved';}).length;
+    if(resolvedLog.length){
+      var avgResp = resolvedLog.reduce(function(a,r){return a+r.responseSec;},0) / resolvedLog.length;
+      var avgRes = resolvedLog.reduce(function(a,r){return a+r.resolutionSec;},0) / resolvedLog.length;
+      document.getElementById('statAvgResponse').textContent = fmt(Math.round(avgResp));
+      document.getElementById('statAvgResolve').textContent = fmt(Math.round(avgRes));
+    }
+  }
+
+  // tick waiting timers every second
+  setInterval(function(){
+    var changed = false;
+    requests.forEach(function(r){
+      if(r.status !== 'resolved'){ r.waitSec++; changed = true; }
+    });
+    if(changed) renderTable();
+  }, 1000);
+
+  renderTable();
+  updateStats();
+
+  // ---------- CHARTS ----------
+  var catChart, respChart;
+  function initCharts(){
+    var catCtx = document.getElementById('catChart').getContext('2d');
+    catChart = new Chart(catCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Supervisor','Technical','Security','General'],
+        datasets: [{
+          data: [0,0,0,0],
+          backgroundColor: [CATS.red.color, CATS.blue.color, CATS.orange.color, CATS.green.color],
+          borderRadius: 3,
+          maxBarThickness: 46
+        }]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ display:false } },
+        scales:{
+          y:{ beginAtZero:true, ticks:{ precision:0, color:'#5B564C' }, grid:{ color:'#D8D1BF' } },
+          x:{ ticks:{ color:'#5B564C', font:{ family:'IBM Plex Mono', size:11 } }, grid:{ display:false } }
+        }
+      }
+    });
+
+    var respCtx = document.getElementById('respChart').getContext('2d');
+    respChart = new Chart(respCtx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          data: [],
+          borderColor: '#C8402F',
+          backgroundColor: 'rgba(200,64,47,0.12)',
+          fill:true, tension:0.3, pointRadius:3
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ display:false } },
+        scales:{
+          y:{ beginAtZero:true, ticks:{ color:'#5B564C' }, grid:{ color:'#D8D1BF' } },
+          x:{ ticks:{ color:'#5B564C', font:{ family:'IBM Plex Mono', size:10 } }, grid:{ display:false } }
+        }
+      }
+    });
+  }
+
+  function updateCharts(){
+    if(!catChart) return;
+    var counts = { red:0, blue:0, orange:0, green:0 };
+    resolvedLog.forEach(function(r){ counts[r.cat]++; });
+    catChart.data.datasets[0].data = [counts.red, counts.blue, counts.orange, counts.green];
+    catChart.update();
+
+    respChart.data.labels = resolvedLog.map(function(r,i){ return 'R' + (i+1); });
+    respChart.data.datasets[0].data = resolvedLog.map(function(r){ return r.responseSec; });
+    respChart.update();
+  }
+
+  if(window.Chart){ initCharts(); } else {
+    window.addEventListener('load', function(){ if(window.Chart) initCharts(); });
+  }
+})();
+</script>
+</body>
+</html>
